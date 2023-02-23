@@ -1,0 +1,7 @@
+name: Feedback
+type: module
+description: Provides a way for residents to report issues and give feedback on city actions.
+package: DrupalTutor Training
+core_version_requirement: ^10
+dependencies:
+  - drupal:block
