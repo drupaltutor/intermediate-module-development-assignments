@@ -1,0 +1,10 @@
+entity.feedback.settings:
+  title: 'Feedback'
+  description: 'Configure a Feedback entity type.'
+  route_name:  entity.feedback.settings
+  parent: system.admin_structure
+entity.feedback.collection:
+  title: 'Feedback'
+  description: 'List of feedback.'
+  route_name: entity.feedback.collection
+  parent: system.admin_content

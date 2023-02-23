@@ -1,0 +1,11 @@
+administer feedback:
+  title: 'Administer feedback settings'
+  restrict access: true
+delete feedback:
+  title: Delete feedback
+create feedback:
+  title: Create feedback
+view feedback:
+  title: View feedback
+edit feedback:
+  title: Edit feedback

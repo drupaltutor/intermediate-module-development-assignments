@@ -1,0 +1,10 @@
+entity.feedback.edit_form:
+  route_name: entity.feedback.edit_form
+  group: feedback
+  title: Edit
+
+entity.feedback.delete_form:
+  route_name: entity.feedback.delete_form
+  group: feedback
+  title: Delete
+  weight: 10

@@ -5,3 +5,11 @@ feedback.simple_feedback_form:
     _form: '\Drupal\feedback\Form\SimpleFeedbackForm'
   requirements:
     _permission: 'access content'
+
+entity.feedback.settings:
+  path: 'admin/structure/feedback'
+  defaults:
+    _form: '\Drupal\feedback\Form\FeedbackSettingsForm'
+    _title: 'Feedback'
+  requirements:
+    _permission: 'administer feedback'

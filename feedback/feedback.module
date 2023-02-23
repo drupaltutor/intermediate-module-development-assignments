@@ -16,3 +16,89 @@ function feedback_mail($key, &$message, $params) {
     $message['body'][] = $params['description'];
   }
 }
+
+use Drupal\Core\Render\Element;
+use Drupal\feedback\Entity\Feedback;
+use Drupal\user\UserInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function feedback_theme() {
+  return [
+    'feedback' => [
+      'render element' => 'elements',
+    ],
+  ];
+}
+
+/**
+ * Prepares variables for feedback templates.
+ *
+ * Default template: feedback.html.twig.
+ *
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the feedback information and any
+ *     fields attached to the entity.
+ *   - attributes: HTML attributes for the containing element.
+ */
+function template_preprocess_feedback(array &$variables) {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  foreach (Element::children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+}
+
+/**
+ * Implements hook_user_cancel().
+ */
+function feedback_user_cancel($edit, UserInterface $account, $method) {
+  switch ($method) {
+    case 'user_cancel_block_unpublish':
+      // Unpublish feedback.
+      $storage = \Drupal::entityTypeManager()->getStorage('feedback');
+      $feedback_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->condition('status', 1)
+        ->execute();
+      foreach ($storage->loadMultiple($feedback_ids) as $feedback) {
+        $feedback->set('status', FALSE);
+        $feedback->save();
+      }
+      break;
+
+    case 'user_cancel_reassign':
+      // Anonymize feedback.
+      $storage = \Drupal::entityTypeManager()->getStorage('feedback');
+      $feedback_ids = $storage->getQuery()
+        ->condition('uid', $account->id())
+        ->execute();
+      foreach ($storage->loadMultiple($feedback_ids) as $feedback) {
+        $feedback->setOwnerId(0);
+        $feedback->save();
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_ENTITY_TYPE_predelete() for user entities.
+ */
+function feedback_user_predelete(UserInterface $account) {
+  // Delete feedback.
+  $storage = \Drupal::entityTypeManager()->getStorage('feedback');
+  $feedback_ids = $storage->getQuery()
+    ->condition('uid', $account->id())
+    ->execute();
+  $feedback = $storage->loadMultiple($feedback_ids);
+  $storage->delete($feedback);
+  // Delete old revisions.
+  $feedback_ids = $storage->getQuery()
+    ->allRevisions()
+    ->condition('uid', $account->id())
+    ->execute();
+  foreach (array_keys($feedback_ids) as $revision_id) {
+    $storage->deleteRevision($revision_id);
+  }
+}
