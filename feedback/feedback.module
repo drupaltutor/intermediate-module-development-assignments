@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * Implements hook_mail().
+ */
+function feedback_mail($key, &$message, $params) {
+  if ($key === 'city_feedback_form') {
+    $message['subject'] = t('Issue submitted from the city feedback form form');
+    $message['body'][] = t('The following issues was entered on the website.');
+    $message['body'][] = t('Name: @name', ['@name' => $params['name']]);
+    $message['body'][] = t('Email: @email', ['@email' => $params['email']]);
+    $message['body'][] = t('Type of Issue: @issue_type', ['@issue_type' => $params['issue_type']]);
+    $message['body'][] = t('Address of Issue:');
+    $message['body'][] = $params['address'];
+    $message['body'][] = t('Description of Issue:');
+    $message['body'][] = $params['description'];
+  }
+}

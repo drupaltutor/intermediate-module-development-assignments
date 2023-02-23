@@ -1,0 +1,7 @@
+feedback.simple_feedback_form:
+  path: '/city-feedback'
+  defaults:
+    _title: 'Submit Feedback to the City'
+    _form: '\Drupal\feedback\Form\SimpleFeedbackForm'
+  requirements:
+    _permission: 'access content'
