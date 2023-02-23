@@ -1,5 +1,11 @@
 <?php
 
+use Drupal\Core\Render\Element;
+use Drupal\feedback\Entity\Feedback;
+use Drupal\feedback\FeedbackInterface;
+use Drupal\user\UserInterface;
+
+
 /**
  * Implements hook_mail().
  */
@@ -14,12 +20,34 @@ function feedback_mail($key, &$message, $params) {
     $message['body'][] = $params['address'];
     $message['body'][] = t('Description of Issue:');
     $message['body'][] = $params['description'];
+    $message['body'][] = t('Link to Feedback: @url', ['@url' => $params['url']]);
   }
 }
 
-use Drupal\Core\Render\Element;
-use Drupal\feedback\Entity\Feedback;
-use Drupal\user\UserInterface;
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function feedback_feedback_insert(FeedbackInterface $feedback) {
+  $params = [
+    'name' => $feedback->get('name')->value,
+    'email' => $feedback->get('email')->value,
+    'issue_type' => $feedback->get('issue_type')->value,
+    'address' => $feedback->get('address')->value,
+    'description' => $feedback->get('description')->value,
+    'url' => $feedback->toUrl('canonical', ['absolute' => TRUE])->toString(),
+  ];
+
+  /** @var \Drupal\Core\Mail\MailManagerInterface $mail_manager */
+  $mail_manager = \Drupal::service('plugin.manager.mail');
+  $mail_manager->mail(
+    'feedback',
+    'city_feedback_form',
+    'cityfeedback@example.com',
+    \Drupal::languageManager()->getDefaultLanguage()->getId(),
+    $params,
+    $feedback->get('email')->value
+  );
+}
 
 /**
  * Implements hook_theme().
@@ -59,6 +87,7 @@ function feedback_user_cancel($edit, UserInterface $account, $method) {
       // Unpublish feedback.
       $storage = \Drupal::entityTypeManager()->getStorage('feedback');
       $feedback_ids = $storage->getQuery()
+        ->accessCheck(FALSE)
         ->condition('uid', $account->id())
         ->condition('status', 1)
         ->execute();
@@ -72,6 +101,7 @@ function feedback_user_cancel($edit, UserInterface $account, $method) {
       // Anonymize feedback.
       $storage = \Drupal::entityTypeManager()->getStorage('feedback');
       $feedback_ids = $storage->getQuery()
+        ->accessCheck(FALSE)
         ->condition('uid', $account->id())
         ->execute();
       foreach ($storage->loadMultiple($feedback_ids) as $feedback) {
@@ -89,12 +119,14 @@ function feedback_user_predelete(UserInterface $account) {
   // Delete feedback.
   $storage = \Drupal::entityTypeManager()->getStorage('feedback');
   $feedback_ids = $storage->getQuery()
+    ->accessCheck(FALSE)
     ->condition('uid', $account->id())
     ->execute();
   $feedback = $storage->loadMultiple($feedback_ids);
   $storage->delete($feedback);
   // Delete old revisions.
   $feedback_ids = $storage->getQuery()
+    ->accessCheck(FALSE)
     ->allRevisions()
     ->condition('uid', $account->id())
     ->execute();
