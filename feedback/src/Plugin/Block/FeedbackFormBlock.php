@@ -20,6 +20,8 @@ class FeedbackFormBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
-    return \Drupal::formBuilder()->getForm(SimpleFeedbackForm::class);
+    $feedback = \Drupal::entityTypeManager()->getStorage('feedback')->create();
+    $form = \Drupal::service('entity.form_builder')->getForm($feedback, 'add');
+    return $form;
   }
 }

@@ -69,7 +69,9 @@ class FeedbackForm extends ContentEntityForm {
     }
 
     if (!\Drupal::currentUser()->hasPermission('view feedback')) {
-      $form_state->setRedirect('<front>');
+      if (\Drupal::routeMatch()->getRouteName() === 'entity.feedback.add_form') {
+        $form_state->setRedirect('<front>');
+      }
     }
     else {
       $form_state->setRedirect('entity.feedback.canonical', ['feedback' => $entity->id()]);
